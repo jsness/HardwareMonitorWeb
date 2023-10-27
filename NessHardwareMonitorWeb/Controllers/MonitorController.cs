@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using NessHardwareMonitorWeb.Models;
 using NessHardwareMonitorWeb.Services;
 
 namespace NessHardwareMonitorWeb.Controllers
@@ -17,5 +18,17 @@ namespace NessHardwareMonitorWeb.Controllers
         [HttpGet]
         [Route("GetHardware")]
         public IActionResult GetHardware() => Ok(_monitorService.GetHardware());
+
+        [HttpPost]
+        [Route("SaveSettings")]
+        public IActionResult SaveSettings([FromBody] SettingsDto request)
+        {
+            _monitorService.SaveSettings(request);
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route("GetSettings")]
+        public IActionResult GetSettings(string userName) => Ok(_monitorService.GetSettings(userName));
     }
 }

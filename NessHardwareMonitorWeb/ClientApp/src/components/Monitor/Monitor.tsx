@@ -23,8 +23,17 @@ const Monitor = () => {
     setHardwareData(data);
   };
 
+  const getSettings = async () => {
+    const response = await fetch("/api/Monitor/GetSettings?userName=Default");
+    const data: { filteredTypes: string[]; pinnedKeys: string[] } =
+      await response.json();
+    setFilteredTypes(data.filteredTypes);
+    setPinnedKeys(data.pinnedKeys);
+  };
+
   useEffect(() => {
     refreshData();
+    getSettings();
   }, []);
 
   useInterval(() => {
@@ -53,26 +62,43 @@ const Monitor = () => {
     setExpandedIndices([]);
   };
 
+  const saveSelections = async () => {
+    await fetch("/api/Monitor/SaveSettings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        userName: "Default",
+        filteredTypes,
+        pinnedKeys,
+      }),
+    });
+  };
+
   return (
     <Stack>
       <Heading as="h6" size="xl">
         Hardware Monitor
       </Heading>
       <SimpleGrid columns={[2, null, 3]}>
-        {pinnedKeys.map((pk) => {
-          const keyParts = pk.split("-");
-          const hardwareIndex = Number(keyParts[0].split("_")[1]);
-          const sensorIndex = Number(keyParts[1].split("_")[1]);
-          const currentSensor =
-            hardwareData[hardwareIndex].sensors[sensorIndex];
+        {hardwareData.length > 0 &&
+          pinnedKeys.map((pk) => {
+            const keyParts = pk.split("-");
+            const hardwareIndex = Number(keyParts[0].split("_")[1]);
+            const sensorIndex = Number(keyParts[1].split("_")[1]);
+            const currentSensor =
+              hardwareData[hardwareIndex].sensors[sensorIndex];
 
-          return <SensorPin key={pk} sensor={currentSensor} />;
-        })}
+            return <SensorPin key={pk} sensor={currentSensor} />;
+          })}
       </SimpleGrid>
       <Filter
+        filteredTypes={filteredTypes}
         addFilteredType={addFilteredType}
         removeFilteredType={removeFilteredType}
         resetSelections={resetSelections}
+        saveSelections={saveSelections}
       />
       <Accordion
         allowMultiple
