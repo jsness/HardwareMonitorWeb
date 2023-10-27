@@ -15,6 +15,7 @@ const Monitor = () => {
   const [hardwareData, setHardwareData] = useState<Hardware[]>([]);
   const [filteredTypes, setFilteredTypes] = useState<string[]>([]);
   const [pinnedKeys, setPinnedKeys] = useState<string[]>([]);
+  const [expandedIndices, setExpandedIndices] = useState<number | number[]>();
 
   const refreshData = async () => {
     const response = await fetch("/api/Monitor/GetHardware");
@@ -46,6 +47,12 @@ const Monitor = () => {
     setPinnedKeys([...pinnedKeys.filter((pk) => pk !== value)]);
   };
 
+  const resetSelections = () => {
+    setFilteredTypes([]);
+    setPinnedKeys([]);
+    setExpandedIndices([]);
+  };
+
   return (
     <Stack>
       <Heading as="h6" size="xl">
@@ -65,8 +72,13 @@ const Monitor = () => {
       <Filter
         addFilteredType={addFilteredType}
         removeFilteredType={removeFilteredType}
+        resetSelections={resetSelections}
       />
-      <Accordion allowMultiple>
+      <Accordion
+        allowMultiple
+        onChange={(expandedIndex) => setExpandedIndices(expandedIndex)}
+        index={expandedIndices}
+      >
         {hardwareData.map((hd, index) => {
           return (
             <HardwareAccordianItem

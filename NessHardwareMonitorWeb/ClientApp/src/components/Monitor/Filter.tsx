@@ -1,4 +1,5 @@
-import { Checkbox, SimpleGrid } from "@chakra-ui/react";
+import { Checkbox, SimpleGrid, Stack, Button } from "@chakra-ui/react";
+import { useState } from "react";
 
 const allFilters = [
   "Voltage",
@@ -24,28 +25,58 @@ const allFilters = [
 interface FilterProps {
   addFilteredType: (value: string) => void;
   removeFilteredType: (value: string) => void;
+  resetSelections: () => void;
 }
 
-const Filter = ({ addFilteredType, removeFilteredType }: FilterProps) => (
-  <SimpleGrid columns={[2, null, 3]}>
-    {allFilters.map((f, index) => {
-      return (
-        <Checkbox
-          key={`filter_${index}`}
-          value={f}
-          onChange={(e) => {
-            if (e.target.checked) {
-              addFilteredType(e.target.value);
-            } else {
-              removeFilteredType(e.target.value);
-            }
-          }}
-        >
-          {f}
-        </Checkbox>
-      );
-    })}
-  </SimpleGrid>
-);
+const Filter = ({
+  addFilteredType,
+  removeFilteredType,
+  resetSelections,
+}: FilterProps) => {
+  const [checkedFilters, setCheckedFilters] = useState<{
+    [x: string]: boolean;
+  }>(allFilters.reduce((result, curr) => ({ ...result, [curr]: false }), {}));
+
+  const handleResetButtonClick = () => {
+    resetSelections();
+    setCheckedFilters(
+      allFilters.reduce((result, curr) => ({ ...result, [curr]: false }), {}),
+    );
+  };
+
+  return (
+    <>
+      <Stack spacing={4} direction="row" align="center">
+        <Button onClick={handleResetButtonClick}>Reset</Button>
+        <Button>Save</Button>
+      </Stack>
+      <SimpleGrid columns={[2, null, 3]}>
+        {allFilters.map((f, index) => {
+          return (
+            <Checkbox
+              key={`filter_${index}`}
+              name={`filter_${index}`}
+              value={f}
+              isChecked={checkedFilters[f]}
+              onChange={(e) => {
+                setCheckedFilters({
+                  ...checkedFilters,
+                  [e.target.value]: e.target.checked,
+                });
+                if (e.target.checked) {
+                  addFilteredType(e.target.value);
+                } else {
+                  removeFilteredType(e.target.value);
+                }
+              }}
+            >
+              {f}
+            </Checkbox>
+          );
+        })}
+      </SimpleGrid>
+    </>
+  );
+};
 
 export default Filter;
